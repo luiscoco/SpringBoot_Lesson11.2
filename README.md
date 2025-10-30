@@ -1,91 +1,57 @@
-# SpringBoot_Lesson9.2
+# SpringBoot_Lesson11.2
 
 ## Propmt for the Code Agent (Codex, Gemini Code Assistant or Copilot)
 
 **Context**:
 
-I am learning to write integration tests for a Spring Boot REST API using Spring Boot 3.3 and Java 17.
-
-I want to test the controller layer and HTTP responses using MockMvc, while mocking the service layer.
-
-The project has Basic auth enabled: endpoint pattern /tasks/** requires role USER, and there is an in-memory user user with password password.
+I want to customize the Actuator endpoints in my Spring Boot 3.3 application to provide more specific operational data.
 
 **Task**:
 
-Generate a JUnit 5 integration test for a TaskController class.
+Configure the build to include version information in the /info endpoint.
 
-**Known code in the app**:
-
-Controller: com.example.demo.controller.TaskController
-
-GET /tasks/{id} returns a TaskDto
-
-GET /tasks supports optional completed query param
-
-POST /tasks accepts a Task and returns a TaskDto (201 Created)
-
-Service: com.example.demo.service.TaskService
-
-Methods include TaskDto getTaskById(long id)
-
-DTO: com.example.demo.dto.TaskDto (record: TaskDto(Long id, String description, boolean completed))
-
-Security: Basic auth required for /tasks/**; in-memory user user / password.
+Implement a custom health indicator that checks for a fictional external service.
 
 **Constraints**:
 
-Use @SpringBootTest to load the application context.
+Use Maven or Gradle.
 
-Use @AutoConfigureMockMvc to test the web layer without a real HTTP server.
+The /info endpoint should display the project's version from the build file.
 
-Mock TaskService with @MockBean.
-
-Use MockMvc to perform the request.
-
-Include a Basic auth header for the request (user:password).
+The custom health check should be named "ExternalService" and contribute to the /health endpoint's status.
 
 **Steps**:
 
-Create src/test/java/com/example/demo/controller/TaskControllerTest.java with package com.example.demo.controller.
+For the /info endpoint:
 
-Annotate the test class with @SpringBootTest and @AutoConfigureMockMvc.
+a. Modify the pom.xml (for Maven) or build.gradle (for Gradle) to enable the build-info goal for the spring-boot-maven-plugin/spring-boot-gradle-plugin.
 
-Inject MockMvc and declare @MockBean TaskService taskService.
+**For the custom health check**:
 
-Stub taskService.getTaskById(1L) to return new TaskDto(1L, "Test Task", false).
+a. Create a new Java class named ExternalServiceHealthIndicator that implements the HealthIndicator interface.
 
-Perform a GET request to /tasks/1 with Basic auth for user:password.
+b. The class must be a Spring @Component.
 
-Assert HTTP status 200 (OK).
+c. In the health() method, implement simple logic:
 
-Assert the response is JSON and matches the DTO: id = 1, description = "Test Task", completed = false (e.g., using jsonPath).
+if a random number is greater than 0.1, return Health.up().withDetail("message", "Service is reachable").build(). Otherwise, return 
 
-Include commands to run only this test using Maven or Gradle.
+Health.down().withDetail("error", "Service is not available").build().
 
-**Acceptance Criteria**:
-
-The test class is annotated with @SpringBootTest and @AutoConfigureMockMvc.
-
-TaskService is mocked with @MockBean.
-
-The test performs a request using MockMvc and includes Basic auth.
-
-The test verifies HTTP 200 OK.
-
-The test verifies the JSON response body fields.
-
-The test compiles and passes.
+Provide instructions to run the application and curl commands to verify both customizations.
 
 **Deliverables**:
 
-Full code for TaskControllerTest.java.
+The required plugin configuration for pom.xml or build.gradle.
 
-Commands to run the test.
+The full code for ExternalServiceHealthIndicator.java.
 
-**Run Only This Test**:
+curl commands to check the /management/info and /management/health endpoints again to see the new data.
 
-Maven: mvn test -Dtest=com.example.demo.controller.TaskControllerTest
+**Acceptance Criteria for your AI-generated code**:
 
-Gradle (Windows): gradlew.bat test --tests "com.example.demo.controller.TaskControllerTest"
+• After a rebuild, running the application and accessing /management/info shows a JSON response containing a build object with the project's version.
 
-Gradle (Unix/macOS): ./gradlew test --tests "com.example.demo.controller.TaskControllerTest"
+• Accessing /management/health now shows a components object containing diskSpace, ping, and the new externalService.
+
+• The status of externalService will be "UP" or "DOWN" based on the logic you implemented, and this will affect the overall application status
